@@ -154,21 +154,24 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 stderr=subprocess.STDOUT,
             )
 
+            command_stdout = run.stdout.decode()
+            command_pos = 0
+
+            s = f"Command output\n{command_stdout}"
+
             # Check for bad return value
             if run.returncode != 0:
                 print_err(
                     f"{file}:{num+1}: command returned error {run.returncode}"
                 )
+                if command_stdout:
+                    print_err(s)
                 errors += 1
                 state = NOTHING
                 continue
-
-            command_stdout = run.stdout.decode()
-            command_pos = 0
-            del run
-
-            if command_stdout:
-                print_debug(f"Command output\n{command_stdout}")
+            else:
+                if command_stdout:
+                    print_debug(s)
 
             state = COMMAND_OUTPUT
 
