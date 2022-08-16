@@ -174,7 +174,11 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
 
         elif state == COMMAND_OUTPUT:
             lf = "\n"
-            regex = f"^{re.escape(line.rstrip(lf))}$"
+            line = line.rstrip(lf)
+            if line == "":
+                continue
+
+            regex = f"^{re.escape(line)}$"
             regex = regex.replace(r"\.\.\.", r".*")
             match = re.findall(regex, command_stdout, re.MULTILINE)
 
@@ -185,7 +189,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 print_err(
                     f"{file}:{num+1}: line not present in output:\n"
                     f"regex={regex}\n"
-                    f"line={line.rstrip(lf)}\n"
+                    f"line={line}\n"
                     f"output=\n{command_stdout.rstrip(lf)}\n"
                 )
                 errors += 1
