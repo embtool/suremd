@@ -60,7 +60,7 @@ All commands must succeed (return zero).
 /* main.c */
 #include <stdio.h>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     if (argc == 1)
     {
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     else
     {
         /* One or more arguments. */
-        for(int i = 1; i < argc; i++)
+        for (int i = 1; i < argc; i++)
             printf("Hello, %s!\n", argv[i]);
     }
 

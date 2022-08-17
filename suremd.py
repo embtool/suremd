@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
+import difflib
+from fileinput import filename
 import re
 import sys
 from typing import DefaultDict, List, Tuple
@@ -9,10 +11,12 @@ import os
 import subprocess
 
 verbose = False
+format_enabled_for = set()
 
 
 def parse_command_line() -> Tuple:
     global verbose
+    global format_enabled_for
 
     parser = argparse.ArgumentParser(description="Test markdown documentation.")
 
@@ -37,11 +41,25 @@ def parse_command_line() -> Tuple:
         default=0,
         help="verbose, can be passed multiple times",
     )
+    parser.add_argument(
+        "--format",
+        action="append",
+        default=[],
+        help="format code for the specified extensions ("
+        "all: for all; "
+        "c,h,cpp: clang-format; "
+        "py: black; "
+        "sh: shfmt"
+        ")",
+    )
 
     args = parser.parse_args()
     doc_dir = args.doc_dir[0]
     build_dir = args.build_dir[0]
     verbose = args.verbose
+    format_enabled_for = {
+        ext for block in args.format for ext in block.split(",")
+    }
 
     return doc_dir, build_dir
 
@@ -113,6 +131,9 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             if state == FILE_CONTENT:
                 if dir_name != "":
                     create_directory(dir_name)
+
+                # Check formatting
+                check_formatting(file_name, file_contents)
 
                 with open(file_name, "w") as fp:
                     fp.write(file_contents)
@@ -225,6 +246,53 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         print_err(f"{file} FAIL", start="")
 
     return errors
+
+
+def check_formatting(file_name: str, file_contents: str) -> None:
+    if "." not in file_name:
+        # Unknown (no extension)
+        return
+
+    extension = file_name.split(".")[-1]
+
+    if extension not in format_enabled_for and "all" not in format_enabled_for:
+        # Should not format this type of ile
+        return
+    if extension in {"c", "h", "cpp"}:
+        # C/C++
+        formatter_command = "clang-format"
+    elif extension in {"py"}:
+        # Python
+        formatter_command = "black -"
+    elif extension in {"sh"}:
+        # Shell
+        formatter_command = "shfmt -i=4 -"
+    else:
+        # Unknown
+        return
+
+    formatter = subprocess.run(
+        formatter_command,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        input=file_contents.encode(),
+    )
+
+    formatted_contents = formatter.stdout.decode()
+
+    diff_contents = "\n".join(
+        difflib.unified_diff(
+            file_contents.split("\n"),
+            formatted_contents.split("\n"),
+            fromfile=f"a/{file_name}",
+            tofile=f"b/{file_name}",
+            lineterm="",
+        )
+    )
+
+    if file_contents != formatted_contents:
+        print_warn(f"Formatting error: {file_name}\n{diff_contents}")
 
 
 def print_err(s: str, start="ERROR: ") -> None:
