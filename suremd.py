@@ -140,11 +140,14 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 # Check formatting
                 check_formatting(file_name, file_contents)
 
-                with open(file_name, "w") as fp:
-                    fp.write(file_contents)
+                if not anonymous_file:
+                    with open(file_name, "w") as fp:
+                        fp.write(file_contents)
 
                 del file_name
                 del dir_name
+                del anonymous_file
+                del anonymous_extension
                 del file_contents
 
             elif state == COMMAND_OUTPUT:
@@ -161,6 +164,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         elif stripped.startswith("```"):
             # Create file
             state = CREATE_FILE
+            anonymous_extension = stripped[3:]
             continue
         elif state == COMMAND_OUTPUT and line.startswith("$"):
             state = RUN_COMMAND
@@ -230,12 +234,15 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     r"^\S*\s*File:\s+(((?:\w+/)*)[\w.]+)\s*.*$",
                     line,
                 )[0]
+                anonymous_file = False
+                print_info(f"Creating file {file_name}")
             except IndexError:
-                # Ignore if no file name in the first line
-                state = NOTHING
-                continue
-
-            print_info(f"Creating file {file_name}")
+                # No file name in the first line
+                # Do not create but try to format
+                file_name = f"{file}.{num+1}.{anonymous_extension}"
+                dir_name = ""
+                anonymous_file = True
+                print_info(f"Anonymous file {file_name}")
 
             file_contents = ""
 
