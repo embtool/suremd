@@ -2,10 +2,9 @@
 
 import argparse
 import difflib
-from fileinput import filename
 import re
 import sys
-from typing import DefaultDict, List, Tuple
+from typing import List, Tuple
 import glob
 import os
 import subprocess
@@ -21,11 +20,11 @@ def parse_command_line() -> Tuple:
     parser = argparse.ArgumentParser(description="Test markdown documentation.")
 
     parser.add_argument(
-        "doc_dir",
-        metavar="DOC_DIR",
+        "doc_path",
+        metavar="DOC_PATH",
         type=str,
         nargs=1,
-        help="documentation directory",
+        help="markdown (.md) file or directory",
     )
     parser.add_argument(
         "build_dir",
@@ -54,18 +53,24 @@ def parse_command_line() -> Tuple:
     )
 
     args = parser.parse_args()
-    doc_dir = args.doc_dir[0]
+    doc_path = args.doc_path[0]
     build_dir = args.build_dir[0]
     verbose = args.verbose
     format_enabled_for = {
         ext for block in args.format for ext in block.split(",")
     }
 
-    return doc_dir, build_dir
+    return doc_path, build_dir
 
 
-def find_doc_files(dir: str, extension=".md") -> List[str]:
-    files = glob.glob(f"{dir}/**/*{extension}", recursive=True)
+def find_doc_files(path: str, extension=".md") -> List[str]:
+    if os.path.isfile(path):
+        files = [path]
+    elif os.path.isdir(path):
+        files = glob.glob(f"{path}/**/*{extension}", recursive=True)
+    else:
+        raise RuntimeError("What is this? Not a file, not a dir.")
+
     abs_file_and_file = [(os.path.abspath(f), f) for f in files]
     return sorted(abs_file_and_file)
 
@@ -314,9 +319,9 @@ def print_debug(s: str):
 
 
 def main():
-    doc_dir, build_dir = parse_command_line()
+    doc_path, build_dir = parse_command_line()
 
-    doc_files = find_doc_files(doc_dir)
+    doc_files = find_doc_files(doc_path)
 
     dir_stack = DirStack()
 

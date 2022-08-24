@@ -18,6 +18,13 @@ $ ./suremd.py . build
 README.md OK
 ```
 
+It is also possible to call `suremd.py` with single markdown file.
+
+```
+$ ./suremd.py README.md build
+README.md OK
+```
+
 # How to use SureMD
 
 1. To create a file use triple ticks followed by the language (```XXX),
