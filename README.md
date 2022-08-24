@@ -25,7 +25,7 @@ README.md OK
    the file, and end with triple ticks.
 
 ```cpp
-/* main.c */
+/* File: main.c */
 #include <stdio.h>
 
 int main(void)
@@ -57,7 +57,7 @@ All commands must succeed (return zero).
 3. Change the file, overwriting the previous content.
 
 ```cpp
-/* main.c */
+/* File: main.c */
 #include <stdio.h>
 
 int main(int argc, char *argv[])

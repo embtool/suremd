@@ -222,13 +222,12 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             try:
                 file_name, dir_name = re.findall(
                     #  Start-Comment  File-Name  End-Comment
-                    r"^(?:#|//|/\*)\s*(((?:\w+/)*)[\w.]+)\s*(?:\*/)?$",
+                    r"^\S*\s*File:\s+(((?:\w+/)*)[\w.]+)\s*.*$",
                     line,
                 )[0]
             except IndexError:
-                print_err(f"{file}:{num+1}: no file name in the first line")
+                # Ignore if no file name in the first line
                 state = NOTHING
-                errors += 1
                 continue
 
             print_info(f"Creating file {file_name}")
