@@ -25,6 +25,16 @@ $ ./suremd.py README.md build
 README.md OK
 ```
 
+By default each file is processed on a different directory created
+inside the build directory. Pass `--single-dir` to process everything
+in the build directory. This is useful when using relative paths to
+files in the version control, alongside de documentation.
+
+```
+$ ./suremd.py . build --single-dir
+README.md OK
+```
+
 # How to use SureMD
 
 1. To create a file use triple ticks followed by the language (```XXX),

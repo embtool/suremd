@@ -10,11 +10,13 @@ import os
 import subprocess
 
 verbose = False
+single_dir = False
 format_enabled_for = set()
 
 
 def parse_command_line() -> Tuple:
     global verbose
+    global single_dir
     global format_enabled_for
 
     parser = argparse.ArgumentParser(description="Test markdown documentation.")
@@ -41,6 +43,12 @@ def parse_command_line() -> Tuple:
         help="verbose, can be passed multiple times",
     )
     parser.add_argument(
+        "--single-dir",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="single directory, do not create directories for each file",
+    )
+    parser.add_argument(
         "--format",
         action="append",
         default=[],
@@ -56,6 +64,7 @@ def parse_command_line() -> Tuple:
     doc_path = args.doc_path[0]
     build_dir = args.build_dir[0]
     verbose = args.verbose
+    single_dir = args.single_dir
     format_enabled_for = {
         ext for block in args.format for ext in block.split(",")
     }
@@ -98,7 +107,12 @@ class DirStack(list):
 
 def test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
     replace = "./ "
-    test_dir = "".join(map(lambda x: "_" if x in replace else x, file))
+
+    if single_dir:
+        # Single directory, just push the current directory to the stack
+        test_dir = "."
+    else:
+        test_dir = "".join(map(lambda x: "_" if x in replace else x, file))
 
     errors = 1
 
