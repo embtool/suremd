@@ -300,7 +300,7 @@ def check_formatting(file_name: str, file_contents: str) -> None:
         formatter_command,
         shell=True,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stderr=subprocess.DEVNULL,
         input=file_contents.encode(),
     )
 
