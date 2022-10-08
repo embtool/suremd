@@ -109,20 +109,12 @@ Hello, bob!
 
 # TODO
 
-- Unfortunately changing directory has effect only in the current
-  line of a command, similar to what happens in a Makefile.
-  I'd like the `cd` to have effect in the whole command block.
-  This does not work as expected:
+- Unfortunately changing directories is quite limited:
 
-  ```
-  $ cd dir
-  $ touch file.txt
-  ```
+  - The lifespan of changing directory is the command block
+  - Can use only actual paths: `cd dir`
+  - CANNOT do:
 
-  To create the file inside the directory you have to do it in a single
-  line:
-
-  ```
-  $ cd dir; touch file.txt
-  $ touch dir/file.txt
-  ```
+    - CANNOT use wildcards: `cd d*r`
+    - CANNOT use variables: `cd $DIR`
+    - CANNOT do anything else in the same line: `cd dir; touch file.txt`

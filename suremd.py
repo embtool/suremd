@@ -169,11 +169,22 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 del command_stdout
                 del command_pos
 
+                # Restore previous directory. The command block might
+                # have changed directory.
+                dir_stack.pop_directory()
+
+            elif state == RUN_COMMAND:
+                # Restore previous directory. The command block might
+                # have changed directory.
+                dir_stack.pop_directory()
+
             state = NOTHING
             continue
         elif stripped == "```console":
             # Run command
             state = RUN_COMMAND
+            # Save current directory. The command block can change it.
+            dir_stack.push_directory(os.getcwd())
             continue
         elif stripped.startswith("```"):
             # Create file
@@ -190,6 +201,16 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 continue
 
             print_info(f"Running command $ {command_line}")
+
+            # If changing directory do it for the whole command block.
+            # The working directory is saved at the start of the command
+            # block and restored at the end of it.
+            # For now we cannot do anything fancy with the directory
+            # name, such as using shell variables or wildcards.
+            if command_line.startswith("cd "):
+                directory = command_line[3:]
+                os.chdir(directory)
+                continue
 
             run = subprocess.run(
                 command_line,
