@@ -144,6 +144,7 @@ RUN_COMMAND = 1
 COMMAND_OUTPUT = 2
 CREATE_FILE = 3
 FILE_CONTENT = 4
+FAILING_COMMAND = 5
 
 
 def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
@@ -164,7 +165,10 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         if stripped == "```":
             # Do according to the previous state
 
-            if state == FILE_CONTENT:
+            if state == NOTHING:
+                # Do nothing
+                pass
+            elif state == FILE_CONTENT:
                 if dir_name != "":
                     create_directory(dir_name)
 
@@ -189,7 +193,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 # have changed directory.
                 dir_stack.pop_directory()
 
-            elif state == RUN_COMMAND:
+            elif state in (RUN_COMMAND, FAILING_COMMAND):
                 # Restore previous directory. The command block might
                 # have changed directory.
                 dir_stack.pop_directory()
@@ -263,7 +267,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 if command_stdout:
                     print_err(s)
                 errors += 1
-                state = NOTHING
+                state = FAILING_COMMAND
                 continue
             else:
                 if command_stdout:
