@@ -322,8 +322,10 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         elif state == CREATE_FILE:
             try:
                 file_name, dir_name = re.findall(
-                    #  Start-Comment  File-Name  End-Comment
-                    r"^\S*\s*" + file_string + r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
+                    #  Start-Comment File-String: Optional-Dir/File-Name Optional-End-Comment
+                    r"^\S*\s*"
+                    + re.escape(file_string)
+                    + r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
                     line,
                 )[0]
                 anonymous_file = False
