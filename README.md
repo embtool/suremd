@@ -28,10 +28,18 @@ README.md OK
 By default each file is processed on a different directory created
 inside the build directory. Pass `--single-dir` to process everything
 in the build directory. This is useful when using relative paths to
-files in the version control, alongside de documentation.
+files in the version control, alongside the documentation.
 
 ```
 $ ./suremd.py . build --single-dir
+README.md OK
+```
+
+SureMD will stop on the first error. Pass the option `--no-stop-on-error`
+if you want to keep processing the current file and also the next files.
+
+```
+$ ./suremd.py . build --no-stop-on-error
 README.md OK
 ```
 
