@@ -132,10 +132,14 @@ class DirStack(list):
 def os_dependent_pwd() -> str:
     """
     Append and OS dependent command that prints the current working
-    directory. We need to make sure add a new line before. Example of
+    directory. We need to make sure add a new line before and keep the
+    same return value as the previous command. Example of
     the expected output: "\n@SureMD_PWD@=/home/user\n"
     """
-    return ' ; echo; echo "@SureMD_PWD@=$PWD"'
+    return (
+        ' ; SureMD_RETVAL=$?; echo; echo "@SureMD_PWD@=$PWD";'
+        " exit $SureMD_RETVAL;"
+    )
 
 
 def test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
