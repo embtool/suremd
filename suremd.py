@@ -65,6 +65,7 @@ def parse_command_line() -> Tuple:
         help="format code for the specified extensions ("
         "all: for all; "
         "c,h,cpp: clang-format; "
+        "cmake: cmake-format; "
         "py: black; "
         "sh: shfmt"
         ")",
@@ -362,14 +363,21 @@ def check_formatting(file_name: str, file_contents: str) -> None:
         # Unknown (no extension)
         return
 
-    extension = file_name.split(".")[-1]
+    if file_name == "CMakeLists.txt":
+        extension = "cmake"
+    else:
+        extension = file_name.split(".")[-1]
 
     if extension not in format_enabled_for and "all" not in format_enabled_for:
         # Should not format this type of ile
         return
+
     if extension in {"c", "h", "cpp"}:
         # C/C++
         formatter_command = "clang-format"
+    elif extension in {"cmake"}:
+        # CMake
+        formatter_command = "cmake-format -"
     elif extension in {"py"}:
         # Python
         formatter_command = "black -"
