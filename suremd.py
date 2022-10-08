@@ -154,6 +154,9 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
     state = NOTHING
     errors = 0
 
+    # Make sure the directory stack is not leaking
+    starting_dir_stack_len = len(dir_stack)
+
     for num, line in enumerate(content):
         # Clean leading and trailing whitespace
         stripped = line.strip()
@@ -318,6 +321,13 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         print_err(f"{file} OK", start="")
     else:
         print_err(f"{file} FAIL", start="")
+
+    # Make sure the directory stack is not leaking
+    assert len(dir_stack) == starting_dir_stack_len, (
+        "Directory stack is leaking. It should not grow or shrink!\n"
+        f"dir_stack={str(dir_stack)}\n"
+        f"file={file_abs}"
+    )
 
     return errors
 
