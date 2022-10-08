@@ -13,6 +13,7 @@ verbose = False
 single_dir = False
 stop_on_error = True
 format_enabled_for = set()
+file_string = "File"
 
 
 def parse_command_line() -> Tuple:
@@ -20,6 +21,7 @@ def parse_command_line() -> Tuple:
     global single_dir
     global stop_on_error
     global format_enabled_for
+    global file_string
 
     parser = argparse.ArgumentParser(description="Test markdown documentation.")
 
@@ -67,6 +69,12 @@ def parse_command_line() -> Tuple:
         "sh: shfmt"
         ")",
     )
+    parser.add_argument(
+        "--file-string",
+        action="store",
+        default="File",
+        help='change the filename string (default: "File")',
+    )
 
     args = parser.parse_args()
     doc_path = args.doc_path[0]
@@ -77,6 +85,7 @@ def parse_command_line() -> Tuple:
     format_enabled_for = {
         ext for block in args.format for ext in block.split(",")
     }
+    file_string = args.file_string
 
     return doc_path, build_dir
 
@@ -313,7 +322,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             try:
                 file_name, dir_name = re.findall(
                     #  Start-Comment  File-Name  End-Comment
-                    r"^\S*\s*File:\s+(((?:\w+/)*)[\w.]+)\s*.*$",
+                    r"^\S*\s*" + file_string + r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
                     line,
                 )[0]
                 anonymous_file = False
