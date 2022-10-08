@@ -315,11 +315,15 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             )
 
             if match:
-                command_output_pos = match.span()[1]
                 print_info(f"Found line {str(line.encode())[1:]}")
+                print_debug(
+                    f"Found line {str(line.encode())[1:]} in the output {command_stdout[command_output_pos:].encode()}"
+                )
+                command_output_pos += match.span()[1]
             else:
-                print_err(
-                    f"Could not find line {str(line.encode())[1:]} in the output"
+                print_err(f"Could not find line {str(line.encode())[1:]}")
+                print_debug(
+                    f"Could not find line {str(line.encode())[1:]} in the output {command_stdout[command_output_pos:].encode()}"
                 )
                 print_err(
                     f"{file}:{num+1}: line not present in output:\n"
