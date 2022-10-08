@@ -211,6 +211,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             elif state == COMMAND_OUTPUT:
                 del command_line
                 del command_stdout
+                del command_output_pos
 
                 # Restore previous directory. The command block might
                 # have changed directory.
@@ -260,6 +261,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
 
             # Filter the last line, which is the working directory at
             # the end of the command
+            command_output_pos = 0
             output_lines = run.stdout.decode().split("\n")
             if len(output_lines) < 2 or not output_lines[-2].startswith(
                 "@SureMD_PWD@="
@@ -275,7 +277,6 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
 
                 # Change directory
                 cwd = os.getcwd()
-
                 if dir != cwd:
                     base_dir = dir_stack.top_directory()
                     print_debug(
@@ -309,9 +310,12 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
 
             regex = f"^{re.escape(line)}$"
             regex = regex.replace(r"\.\.\.", r".*")
-            match = re.findall(regex, command_stdout, re.MULTILINE)
+            match = re.search(
+                regex, command_stdout[command_output_pos:], re.MULTILINE
+            )
 
             if match:
+                command_output_pos = match.span()[1]
                 print_info(f"Found line {str(line.encode())[1:]}")
             else:
                 print_err(
@@ -321,6 +325,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     f"{file}:{num+1}: line not present in output:\n"
                     f"regex={regex}\n"
                     f"line={line}\n"
+                    f"pos={command_output_pos}\n"
                     f"output=\n{command_stdout.rstrip(lf)}\n"
                 )
                 errors += 1
