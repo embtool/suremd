@@ -104,6 +104,20 @@ class DirStack(list):
         # Change directory
         os.chdir(dir)
 
+    def top_directory(self) -> str:
+        # Get the top directory
+        dir = self[-1]
+        return dir
+
+
+def os_dependent_pwd() -> str:
+    """
+    Append and OS dependent command that prints the current working
+    directory. We need to make sure add a new line before. Example of
+    the expected output: "\n@SureMD_PWD@=/home/user\n"
+    """
+    return ' ; echo; echo "@SureMD_PWD@=$PWD"'
+
 
 def test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
     replace = "./ "
@@ -167,7 +181,6 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             elif state == COMMAND_OUTPUT:
                 del command_line
                 del command_stdout
-                del command_pos
 
                 # Restore previous directory. The command block might
                 # have changed directory.
@@ -202,25 +215,40 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
 
             print_info(f"Running command $ {command_line}")
 
-            # If changing directory do it for the whole command block.
-            # The working directory is saved at the start of the command
-            # block and restored at the end of it.
-            # For now we cannot do anything fancy with the directory
-            # name, such as using shell variables or wildcards.
-            if command_line.startswith("cd "):
-                directory = command_line[3:]
-                os.chdir(directory)
-                continue
+            # Append a command that prints the current working directory
+            command_line_pwd = command_line + os_dependent_pwd()
 
             run = subprocess.run(
-                command_line,
+                command_line_pwd,
                 shell=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
             )
 
-            command_stdout = run.stdout.decode()
-            command_pos = 0
+            # Filter the last line, which is the working directory at
+            # the end of the command
+            output_lines = run.stdout.decode().split("\n")
+            if len(output_lines) < 2 or not output_lines[-2].startswith(
+                "@SureMD_PWD@="
+            ):
+                # The execution did not reach the end of the command,
+                # where the working directory is printed.
+                # This may be caused by and `exit` in the command.
+                # In this case we keep the previous working directory.
+                command_stdout = "\n".join(output_lines)
+            else:
+                dir = output_lines[-2][13:]
+                command_stdout = "\n".join(output_lines[:-3])
+
+                # Change directory
+                cwd = os.getcwd()
+
+                if dir != cwd:
+                    base_dir = dir_stack.top_directory()
+                    print_debug(
+                        f'Changing directory to "{os.path.relpath(dir, base_dir)}"'
+                    )
+                    os.chdir(dir)
 
             s = f"Command output\n{command_stdout}"
 

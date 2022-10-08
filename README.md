@@ -106,15 +106,3 @@ Hello, alice!
 Hello, ...!
 Hello, bob!
 ```
-
-# TODO
-
-- Unfortunately changing directories is quite limited:
-
-  - The lifespan of changing directory is the command block
-  - Can use only actual paths: `cd dir`
-  - CANNOT do:
-
-    - CANNOT use wildcards: `cd d*r`
-    - CANNOT use variables: `cd $DIR`
-    - CANNOT do anything else in the same line: `cd dir; touch file.txt`
