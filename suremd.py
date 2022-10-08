@@ -288,7 +288,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             # Check for bad return value
             if run.returncode != 0:
                 print_err(
-                    f"{file}:{num+1}: command returned error {run.returncode}"
+                    f"{file}:{num+1}: command '{command_line}' returned error {run.returncode}"
                 )
                 if command_stdout:
                     print_err(s)
@@ -314,7 +314,9 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             if match:
                 print_info(f"Found line {str(line.encode())[1:]}")
             else:
-                print_err(f"Could not find line {str(line.encode())[1:]}")
+                print_err(
+                    f"Could not find line {str(line.encode())[1:]} in the output"
+                )
                 print_err(
                     f"{file}:{num+1}: line not present in output:\n"
                     f"regex={regex}\n"
