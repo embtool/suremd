@@ -11,12 +11,14 @@ import subprocess
 
 verbose = False
 single_dir = False
+stop_on_error = True
 format_enabled_for = set()
 
 
 def parse_command_line() -> Tuple:
     global verbose
     global single_dir
+    global stop_on_error
     global format_enabled_for
 
     parser = argparse.ArgumentParser(description="Test markdown documentation.")
@@ -49,6 +51,12 @@ def parse_command_line() -> Tuple:
         help="single directory, do not create directories for each file",
     )
     parser.add_argument(
+        "--stop-on-error",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="stop on the first error",
+    )
+    parser.add_argument(
         "--format",
         action="append",
         default=[],
@@ -65,6 +73,7 @@ def parse_command_line() -> Tuple:
     build_dir = args.build_dir[0]
     verbose = args.verbose
     single_dir = args.single_dir
+    stop_on_error = args.stop_on_error
     format_enabled_for = {
         ext for block in args.format for ext in block.split(",")
     }
@@ -197,6 +206,9 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 # Restore previous directory. The command block might
                 # have changed directory.
                 dir_stack.pop_directory()
+
+                if stop_on_error:
+                    break
 
             state = NOTHING
             continue
@@ -414,6 +426,9 @@ def main():
     errors = 0
     for file_abs, file in doc_files:
         errors += test_file(file_abs, file, dir_stack)
+
+        if errors > 0 and stop_on_error:
+            break
 
     dir_stack.pop_directory()
 
