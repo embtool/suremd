@@ -1,46 +1,25 @@
-# [SureMD - Markdown Documentation Tester](https://github.com/embtool/suremd)
+# [SureMD - Test Markdown Files](https://github.com/embtool/suremd)
 
 by [Djones A. Boni](https://github.com/djboni)
 
-Test the documentation to keep it up to date.
-
-SureMD will find all markdown (.md) files in the subdirectories, create
-files and process the console commands.
+SureMD will find all markdown files (.md) in the subdirectories and
+process them, creating the files and running the console commands
+specified in the documentation.
 
 # Quick-start
 
-Call `suremd.py` and pass the documentation directory (where the
-markdown files are present) and the build directory (working directory
-where to create files and run commands).
+Just call `suremd.py`. It will search for markdown files in the current
+working directory and will process them in the _build/_ directory.
 
 ```
-$ ./suremd.py . build
-README.md OK
+$ ./suremd.py
 ```
 
-It is also possible to call `suremd.py` with single markdown file.
+It is also possible to call `suremd.py` with directories and markdown
+files.
 
 ```
-$ ./suremd.py README.md build
-README.md OK
-```
-
-By default each file is processed on a different directory created
-inside the build directory. Pass `--single-dir` to process everything
-in the build directory. This is useful when using relative paths to
-files in the version control, alongside the documentation.
-
-```
-$ ./suremd.py . build --single-dir
-README.md OK
-```
-
-SureMD will stop on the first error. Pass the option `--no-stop-on-error`
-if you want to keep processing the current file and also the next files.
-
-```
-$ ./suremd.py . build --no-stop-on-error
-README.md OK
+$ ./suremd.py README.md
 ```
 
 # How to use SureMD
