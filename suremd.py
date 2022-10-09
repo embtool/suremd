@@ -282,7 +282,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 cwd = os.getcwd()
                 if dir != cwd:
                     base_dir = dir_stack.top_directory()
-                    print_debug(
+                    print_info(
                         f'Changing directory to "{os.path.relpath(dir, base_dir)}"'
                     )
                     os.chdir(dir)
@@ -301,7 +301,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 continue
             else:
                 if command_stdout:
-                    print_debug(s)
+                    print_info(s)
 
             state = COMMAND_OUTPUT
 
