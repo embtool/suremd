@@ -310,7 +310,8 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 continue
 
             regex = f"^\s*{re.escape(line)}\s*$"
-            regex = regex.replace(r"\.\.\.", r".*")
+            # Substitute "SPACES...SPACES" for ".*"
+            regex = re.sub(r"(\\?\s)*\\\.\\\.\\\.(\\?\s)*", r".*", regex)
             match = re.search(
                 regex, command_stdout[command_output_pos:], re.MULTILINE
             )
