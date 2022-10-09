@@ -187,6 +187,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
     for num, line in enumerate(content):
         # Clean leading and trailing whitespace
         stripped = line.strip()
+        file_line = f"{file}:{num+1}"
 
         if stripped == "```":
             # Do according to the previous state
@@ -199,7 +200,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     create_directory(dir_name)
 
                 # Check formatting
-                check_formatting(file_name, file_contents)
+                check_formatting(file_name, file_contents, file_line)
 
                 if not anonymous_file:
                     with open(file_name, "w") as fp:
@@ -292,7 +293,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             # Check for bad return value
             if run.returncode != 0:
                 print_err(
-                    f"{file}:{num+1}: command '{command_line}' returned error {run.returncode}"
+                    f"{file_line}: command '{command_line}' returned error {run.returncode}"
                 )
                 if command_stdout:
                     print_err(s)
@@ -328,7 +329,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     f"Could not find line {str(line.encode())[1:]} in the output {command_stdout[command_output_pos:].encode()}"
                 )
                 print_err(
-                    f"{file}:{num+1}: line not present in output:\n"
+                    f"{file_line}: line not present in output:\n"
                     f"regex={regex}\n"
                     f"line={line}\n"
                     f"pos={command_output_pos}\n"
@@ -378,7 +379,9 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
     return errors
 
 
-def check_formatting(file_name: str, file_contents: str) -> None:
+def check_formatting(
+    file_name: str, file_contents: str, md_file_line: str
+) -> None:
     if "." not in file_name:
         # Unknown (no extension)
         return
@@ -429,7 +432,9 @@ def check_formatting(file_name: str, file_contents: str) -> None:
     )
 
     if file_contents != formatted_contents:
-        print_warn(f"Formatting error: {file_name}\n{diff_contents}")
+        print_warn(
+            f"Formatting error: {md_file_line}: {file_name}\n{diff_contents}"
+        )
 
 
 def print_err(s: str, start="ERROR: ") -> None:
