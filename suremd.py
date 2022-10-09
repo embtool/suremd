@@ -298,12 +298,10 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     print_err(s)
                 errors += 1
                 state = FAILING_COMMAND
-                continue
             else:
                 if command_stdout:
                     print_info(s)
-
-            state = COMMAND_OUTPUT
+                state = COMMAND_OUTPUT
 
         elif state == COMMAND_OUTPUT:
             lf = "\n"
@@ -336,6 +334,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                     f"output=\n{command_stdout.rstrip(lf)}\n"
                 )
                 errors += 1
+                state = FAILING_COMMAND
 
         elif state == CREATE_FILE:
             try:
