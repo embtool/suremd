@@ -87,7 +87,7 @@ def parse_command_line() -> Tuple:
     )
 
     args = parser.parse_args()
-    doc_path = args.doc_path[0]
+    doc_path = args.doc_path
     build_dir = args.build_dir[0]
     verbose = args.verbose
     single_dir = args.single_dir
@@ -100,15 +100,20 @@ def parse_command_line() -> Tuple:
     return doc_path, build_dir
 
 
-def find_doc_files(path: str, extension=".md") -> List[str]:
-    if os.path.isfile(path):
-        files = [path]
-    elif os.path.isdir(path):
-        files = glob.glob(f"{path}/**/*{extension}", recursive=True)
-    else:
-        raise RuntimeError("What is this? Not a file, not a dir.")
+def find_doc_files(list_of_paths: List[str], extension=".md") -> List[str]:
 
-    abs_file_and_file = [(os.path.abspath(f), f) for f in files]
+    files = []
+
+    for path in list_of_paths:
+        if os.path.isfile(path):
+            files += [path]
+        elif os.path.isdir(path):
+            files += glob.glob(f"{path}/**/*{extension}", recursive=True)
+        else:
+            raise RuntimeError(f"ERROR: {path} does not exist.")
+
+    files = {f if os.path.isabs(f) else os.path.relpath(f, ".") for f in files}
+    abs_file_and_file = {(os.path.abspath(f), f) for f in files}
     return sorted(abs_file_and_file)
 
 
