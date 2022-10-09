@@ -311,7 +311,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             if line == "":
                 continue
 
-            regex = f"^{re.escape(line)}$"
+            regex = f"^\s*{re.escape(line)}\s*$"
             regex = regex.replace(r"\.\.\.", r".*")
             match = re.search(
                 regex, command_stdout[command_output_pos:], re.MULTILINE
