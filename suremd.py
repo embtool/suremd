@@ -9,7 +9,7 @@ import glob
 import os
 import subprocess
 
-verbose = False
+verbose = 0
 single_dir = False
 stop_on_error = True
 format_enabled_for = set()
@@ -23,28 +23,36 @@ def parse_command_line() -> Tuple:
     global format_enabled_for
     global file_string
 
-    parser = argparse.ArgumentParser(description="Test markdown documentation.")
+    parser = argparse.ArgumentParser(
+        description="""
+    SureMD - Test markdown files.
+    Create files and execute commands in markdown files (.md).
+    See https://github.com/embtool/suremd for information on how to
+    create files that SureMD can process.
+    """
+    )
 
     parser.add_argument(
         "doc_path",
         metavar="DOC_PATH",
         type=str,
-        nargs=1,
-        help="markdown (.md) file or directory",
+        nargs="*",
+        default=["."],
+        help="directories or markdown files (default: ./)",
     )
     parser.add_argument(
-        "build_dir",
-        metavar="BUILD_DIR",
-        type=str,
-        nargs=1,
-        help="build directory",
-    )
-    parser.add_argument(
-        "--verbose",
         "-v",
+        "--verbose",
         action="count",
         default=0,
         help="verbose, can be passed multiple times",
+    )
+    parser.add_argument(
+        "--build-dir",
+        type=str,
+        nargs=1,
+        default=["./build"],
+        help="build directory (default: ./build/)",
     )
     parser.add_argument(
         "--single-dir",
@@ -59,15 +67,16 @@ def parse_command_line() -> Tuple:
         help="stop on the first error",
     )
     parser.add_argument(
+        "-f",
         "--format",
         action="append",
         default=[],
-        help="format code for the specified extensions ("
-        "all: for all; "
+        help="comma-separated list of extensions to format ("
         "c,h,cpp: clang-format; "
         "cmake: cmake-format; "
         "py: black; "
-        "sh: shfmt"
+        "sh: shfmt; "
+        "all: for all"
         ")",
     )
     parser.add_argument(
