@@ -24,41 +24,12 @@ $ ./suremd.py README.md
 
 # How to use SureMD
 
+To learn how to use SureMD take a look into the files in the _tutorial/_
+directory. Here is one example:
+
 1. To create a file use triple ticks followed by the language (```XXX),
    add a comment with the filename (no spaces), the code for
    the file, and end with triple ticks.
-
-```cpp
-/* File: main.c */
-#include <stdio.h>
-
-int main(void)
-{
-    printf("Hello, World!\n");
-    return 0;
-}
-```
-
-The first line (filename comment) is removed from the output file.
-
-2. To run a command use triple ticks followed by "console" (```console),
-   write the command prepended with a dollar sign.
-   Write a comment before the first command (optional).
-   Write the expected output after the command (optional).
-
-```console
-A command starts with a dollar sign ($).
-Anything before the first command is a comment.
-Anything after a command must match the command's output.
-
-$ gcc -o main main.c
-$ ./main
-Hello, World!
-```
-
-All commands must succeed (return zero).
-
-3. Change the file, overwriting the previous content.
 
 ```cpp
 /* File: main.c */
@@ -82,11 +53,19 @@ int main(int argc, char *argv[])
 }
 ```
 
-4. Check many lines in sequence.
-   If only part of the output is known use ... as a wildcard.
+The first line (filename comment) is removed from the output file.
+
+2. To run a command use triple ticks followed by "console" (```console),
+   write the command prepended with a dollar sign.
+   Write a comment before the first command (optional).
+   Write the expected output after the command (optional).
+   All commands must succeed (return zero).
 
 ```console
 $ gcc -o main main.c
+
+$ ./main
+Hello, World!
 
 $ ./main alice $USER bob
 Hello, alice!
