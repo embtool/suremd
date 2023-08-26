@@ -362,6 +362,8 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 )[0]
                 anonymous_file = False
                 print_info(f"Creating file {file_name}")
+
+                file_contents = ""
             except IndexError:
                 # No file name in the first line
                 # Do not create but try to format
@@ -370,7 +372,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 anonymous_file = True
                 print_info(f"Anonymous file {file_name}")
 
-            file_contents = ""
+                file_contents = line
 
             state = FILE_CONTENT
 
