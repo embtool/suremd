@@ -213,12 +213,11 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 if dir_name != "":
                     create_directory(dir_name)
 
+                with open(file_name, "w") as fp:
+                    fp.write(file_contents)
+
                 # Check formatting
                 check_formatting(file_name, file_contents, file_line)
-
-                if not anonymous_file:
-                    with open(file_name, "w") as fp:
-                        fp.write(file_contents)
 
                 del file_name
                 del dir_name
@@ -409,31 +408,46 @@ def check_formatting(
         # Should not format this type of ile
         return
 
+    in_place_formatting = False
+
     if extension in {"c", "h", "cpp"}:
         # C/C++
-        formatter_command = "clang-format"
+        formatter_command = ["clang-format"]
     elif extension in {"cmake"}:
         # CMake
-        formatter_command = "cmake-format -"
+        formatter_command = ["cmake-format", "-"]
+    elif extension in {"zig"}:
+        # Zig
+        formatter_command = ["zig", "fmt"]
+        in_place_formatting = True
     elif extension in {"py"}:
         # Python
-        formatter_command = "black -"
+        formatter_command = ["black", "-"]
     elif extension in {"sh"}:
         # Shell
-        formatter_command = "shfmt -i=4 -"
+        formatter_command = ["shfmt", "-i=4", "-"]
     else:
         # Unknown
-        return
+        print_info(f"Ignoring formatting of unknown file type {md_file_line}: {file_name}")
 
-    formatter = subprocess.run(
-        formatter_command,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        input=file_contents.encode(),
-    )
+    if in_place_formatting:
+        formatter = subprocess.run(
+            formatter_command + [file_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
-    formatted_contents = formatter.stdout.decode()
+        with open(file_name) as fp:
+            formatted_contents = fp.read()
+    else:
+        formatter = subprocess.run(
+            formatter_command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            input=file_contents.encode(),
+        )
+
+        formatted_contents = formatter.stdout.decode()
 
     diff_contents = "\n".join(
         difflib.unified_diff(
