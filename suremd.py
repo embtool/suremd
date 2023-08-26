@@ -365,7 +365,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             except IndexError:
                 # No file name in the first line
                 # Do not create but try to format
-                file_name = f"{file}.{num+1}.{anonymous_extension}"
+                file_name = f"anonymous-file-line-{num+1}.{anonymous_extension}"
                 dir_name = ""
                 anonymous_file = True
                 print_info(f"Anonymous file {file_name}")
