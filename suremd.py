@@ -254,6 +254,8 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             # Create file
             state = CREATE_FILE
             anonymous_extension = stripped[3:]
+            indent_size = len(line.rstrip()) - len(stripped)
+            indent = ' ' * indent_size
             continue
         elif state == COMMAND_OUTPUT and line.startswith("$"):
             state = RUN_COMMAND
@@ -354,8 +356,8 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         elif state == CREATE_FILE:
             try:
                 file_name, dir_name = re.findall(
-                    #  Start-Comment File-String: Optional-Dir/File-Name Optional-End-Comment
-                    r"^\S*\s*"
+                    #     Start-Comment File-String: Optional-Dir/File-Name Optional-End-Comment
+                    r"^\s*\S*\s*"
                     + re.escape(file_string)
                     + r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
                     line,
@@ -372,12 +374,18 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 anonymous_file = True
                 print_info(f"Anonymous file {file_name}")
 
-                file_contents = line
+                if line.startswith(indent):
+                    file_contents = line[indent_size:]
+                else:
+                    file_contents = line
 
             state = FILE_CONTENT
 
         elif state == FILE_CONTENT:
-            file_contents += line
+            if line.startswith(indent):
+                file_contents += line[indent_size:]
+            else:
+                file_contents += line
 
     if errors == 0:
         print_err(f"{file} OK", start="")
