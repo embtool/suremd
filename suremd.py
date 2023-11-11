@@ -92,16 +92,13 @@ def parse_command_line() -> Tuple:
     verbose = args.verbose
     single_dir = args.single_dir
     stop_on_error = args.stop_on_error
-    format_enabled_for = {
-        ext for block in args.format for ext in block.split(",")
-    }
+    format_enabled_for = {ext for block in args.format for ext in block.split(",")}
     file_string = args.file_string
 
     return doc_path, build_dir
 
 
 def find_doc_files(list_of_paths: List[str], extension=".md") -> List[str]:
-
     files = []
 
     for path in list_of_paths:
@@ -150,12 +147,14 @@ def os_dependent_pwd() -> str:
     same return value as the previous command. Example of
     the expected output: "\n@SureMD_PWD@=/home/user\n"
     """
-    return (
-        "\n"
-        "SureMD_RETVAL=$?\n"
-        "echo\n"
-        'echo "@SureMD_PWD@=$PWD"\n'
-        "exit $SureMD_RETVAL\n"
+    return "".join(
+        [
+            "\n",
+            "SureMD_RETVAL=$?\n",
+            "echo\n",
+            'echo "@SureMD_PWD@=$PWD"\n',
+            "exit $SureMD_RETVAL\n",
+        ]
     )
 
 
@@ -255,7 +254,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             state = CREATE_FILE
             anonymous_extension = stripped[3:]
             indent_size = len(line.rstrip()) - len(stripped)
-            indent = ' ' * indent_size
+            indent = " " * indent_size
             continue
         elif state == COMMAND_OUTPUT and line.startswith("$"):
             state = RUN_COMMAND
@@ -282,9 +281,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             # the end of the command
             command_output_pos = 0
             output_lines = run.stdout.decode().split("\n")
-            if len(output_lines) < 2 or not output_lines[-2].startswith(
-                "@SureMD_PWD@="
-            ):
+            if len(output_lines) < 2 or not output_lines[-2].startswith("@SureMD_PWD@="):
                 # The execution did not reach the end of the command,
                 # where the working directory is printed.
                 # This may be caused by and `exit` in the command.
@@ -298,18 +295,14 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
                 cwd = os.getcwd()
                 if dir != cwd:
                     base_dir = dir_stack.top_directory()
-                    print_info(
-                        f'Changing directory to "{os.path.relpath(dir, base_dir)}"'
-                    )
+                    print_info(f'Changing directory to "{os.path.relpath(dir, base_dir)}"')
                     os.chdir(dir)
 
             s = f"Command output\n{command_stdout}"
 
             # Check for bad return value
             if run.returncode != 0:
-                print_err(
-                    f"{file_line}: command '{command_line}' returned error {run.returncode}"
-                )
+                print_err(f"{file_line}: command '{command_line}' returned error {run.returncode}")
                 if command_stdout:
                     print_err(s)
                 errors += 1
@@ -328,9 +321,7 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             regex = f"^\s*{re.escape(line)}\s*$"
             # Substitute "SPACES...SPACES" for ".*"
             regex = re.sub(r"(\\?\s)*\\\.\\\.\\\.(\\?\s)*", r".*", regex)
-            match = re.search(
-                regex, command_stdout[command_output_pos:], re.MULTILINE
-            )
+            match = re.search(regex, command_stdout[command_output_pos:], re.MULTILINE)
 
             if match:
                 print_info(f"Found line {str(line.encode())[1:]}")
@@ -357,9 +348,13 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
             try:
                 file_name, dir_name = re.findall(
                     #     Start-Comment File-String: Optional-Dir/File-Name Optional-End-Comment
-                    r"^\s*\S*\s*"
-                    + re.escape(file_string)
-                    + r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
+                    "".join(
+                        [
+                            r"^\s*\S*\s*",
+                            re.escape(file_string),
+                            r":\s+(((?:\w+/)*)[\w.]+)\s*.*$",
+                        ]
+                    ),
                     line,
                 )[0]
                 anonymous_file = False
@@ -393,18 +388,18 @@ def try_test_file(file_abs: str, file: str, dir_stack: DirStack) -> None:
         print_err(f"{file} FAIL", start="")
 
     # Make sure the directory stack is not leaking
-    assert len(dir_stack) == starting_dir_stack_len, (
-        "Directory stack is leaking. It should not grow or shrink!\n"
-        f"dir_stack={str(dir_stack)}\n"
-        f"file={file_abs}"
+    assert len(dir_stack) == starting_dir_stack_len, "".join(
+        [
+            "Directory stack is leaking. It should not grow or shrink!\n",
+            f"dir_stack={str(dir_stack)}\n",
+            f"file={file_abs}",
+        ]
     )
 
     return errors
 
 
-def check_formatting(
-    file_name: str, file_contents: str, md_file_line: str
-) -> None:
+def check_formatting(file_name: str, file_contents: str, md_file_line: str) -> None:
     if "." not in file_name:
         # Unknown (no extension)
         return
@@ -470,9 +465,7 @@ def check_formatting(
     )
 
     if file_contents != formatted_contents:
-        print_warn(
-            f"Formatting error: {md_file_line}: {file_name}\n{diff_contents}"
-        )
+        print_warn(f"Formatting error: {md_file_line}: {file_name}\n{diff_contents}")
 
 
 def print_err(s: str, start="ERROR: ") -> None:
